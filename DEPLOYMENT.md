@@ -79,7 +79,8 @@ npm run build
 ### 1. 准备工作
 
 1. 注册 [Render](https://render.com) 账户
-2. 准备好需要的环境变量:
+2. **注意：Render 需要绑定信用卡信息才能部署服务，即使是免费套餐也需要提供信用卡进行验证**
+3. 准备好需要的环境变量:
    - `SUPABASE_URL`: Supabase 项目 URL
    - `SUPABASE_KEY`: Supabase 项目密钥
    - `PORT`: Render 使用的端口 (Render 会自动设置)
@@ -175,7 +176,7 @@ CREATE TABLE IF NOT EXISTS tasks (
 
 ## 部署后验证
 
-1. 访问前端 URL，确保页面正常加载
+1. 访问前端 URL，确保页面正常加载的
 2. 尝试登录或注册新用户
 3. 创建、编辑和删除项目和任务
 4. 检查数据是否正确保存到数据库
