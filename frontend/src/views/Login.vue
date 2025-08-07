@@ -7,7 +7,7 @@
           项目管理系统
         </h2>
         <p class="mt-2 text-center text-sm text-gray-700">
-          {{ showSignup ? '创建新账户' : '登录您的账户' }}
+          {{ showSignup ? '创建新账户' : '登录到您的账户' }}
         </p>
       </div>
       <form class="mt-8 space-y-6" @submit.prevent="handleLogin">
