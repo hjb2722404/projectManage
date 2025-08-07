@@ -5,7 +5,7 @@
 ## 部署架构
 
 - **前端**: Vue 3 + Vite + UnoCSS + TypeScript 部署到 Netlify
-- **后端**: Node.js + Express 部署到 Render
+- **后端**: Node.js + Express 部署到 Render/Vercel Serverless Functions
 - **数据库**: Supabase
 
 ## 前端部署到 Netlify
