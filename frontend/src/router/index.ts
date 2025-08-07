@@ -1,6 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
+// @ts-ignore
 import Projects from '../views/Projects.vue';
+// @ts-ignore
 import Tasks from '../views/Tasks.vue';
+// @ts-ignore
 import Login from '../views/Login.vue';
 import { getCurrentUser } from '../services/authService';
 
@@ -34,7 +37,7 @@ const router = createRouter({
 });
 
 // 添加路由守卫
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   // 检查路由是否需要认证
   if (to.matched.some(record => record.meta.requiresAuth)) {
     // 检查用户是否已登录

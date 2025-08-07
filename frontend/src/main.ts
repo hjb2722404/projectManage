@@ -17,7 +17,7 @@ app.use(pinia);
 app.use(router);
 
 // 监听认证状态变化
-onAuthStateChange((event, session) => {
+onAuthStateChange((event, _session) => {
   console.log('认证状态变化:', event);
   
   // 如果用户登出，重定向到登录页
