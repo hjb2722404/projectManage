@@ -3,6 +3,9 @@ import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { logout } from '../services/authService'
 
+// 引入OpenTiny Vue组件
+import { Menu as TinyMenu, Button as TinyButton } from '@opentiny/vue';
+
 const route = useRoute()
 const router = useRouter()
 const isMenuOpen = ref(false)
@@ -49,30 +52,33 @@ const handleLogout = async () => {
             </router-link>
             
             <!-- 登出按钮 -->
-            <button
+            <tiny-button
               @click="handleLogout"
+              type="text"
               class="text-gray-700 hover:text-primary-600 font-medium transition-colors flex items-center"
             >
               <i class="i-mdi-logout mr-1"></i>
               登出
-            </button>
+            </tiny-button>
           </div>
           
           <!-- 移动端菜单按钮 -->
           <div class="md:hidden flex items-center">
-            <button
+            <tiny-button
               @click="handleLogout"
+              type="text"
               class="text-gray-700 hover:text-primary-600 mr-4"
             >
               <i class="i-mdi-logout text-xl"></i>
-            </button>
+            </tiny-button>
             
-            <button
+            <tiny-button
               @click="toggleMenu"
+              type="text"
               class="text-gray-700 hover:text-primary-600"
             >
               <i class="i-mdi-menu text-2xl"></i>
-            </button>
+            </tiny-button>
           </div>
         </div>
       </div>

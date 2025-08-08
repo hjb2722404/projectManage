@@ -4,6 +4,15 @@ import { useTasksStore } from '../stores/tasks'
 import { useProjectsStore } from '../stores/projects'
 import type { Task } from '../types/task'
 
+// 引入OpenTiny Vue组件
+import { 
+  Button as TinyButton, 
+  Input as TinyInput,
+  Select as TinySelect,
+  DatePicker as TinyDatePicker,
+  Slider as TinySlider
+} from '@opentiny/vue';
+
 const tasksStore = useTasksStore()
 const projectsStore = useProjectsStore()
 
@@ -43,20 +52,15 @@ const showCreateForm = () => {
 }
 
 // 显示编辑表单
-const showEditForm = (task: any) => {
+const showEditForm = (task: Task) => {
   isFormVisible.value = true
   editingTaskId.value = task.id
   taskForm.value = {
-    name: task.name,
-    type: task.type,
-    projectId: task.projectId || task.project_id,
-    description: task.description,
-    status: task.status,
-    createdAt: (task.createdAt || task.created_at || new Date().toISOString()).slice(0, 16),
-    dueDate: (task.dueDate || task.due_date || '').slice(0, 16) || null,
-    plannedCompletionDate: (task.plannedCompletionDate || task.planned_completion_date || '').slice(0, 16) || null,
-    actualCompletionDate: (task.actualCompletionDate || task.actual_completion_date || '').slice(0, 16) || null,
-    progress: task.progress
+    ...task,
+    createdAt: task.createdAt.slice(0, 16),
+    dueDate: task.dueDate ? task.dueDate.slice(0, 16) : null,
+    plannedCompletionDate: task.plannedCompletionDate ? task.plannedCompletionDate.slice(0, 16) : null,
+    actualCompletionDate: task.actualCompletionDate ? task.actualCompletionDate.slice(0, 16) : null
   }
 }
 
@@ -64,64 +68,43 @@ const showEditForm = (task: any) => {
 const saveTask = async () => {
   try {
     if (editingTaskId.value) {
-      // 更新现有任务
-      await tasksStore.updateTask(editingTaskId.value, {
-        name: taskForm.value.name,
-        type: taskForm.value.type,
-        projectId: taskForm.value.projectId,
-        description: taskForm.value.description,
-        status: taskForm.value.status,
-        createdAt: taskForm.value.createdAt,
-        dueDate: taskForm.value.dueDate,
-        plannedCompletionDate: taskForm.value.plannedCompletionDate,
-        actualCompletionDate: taskForm.value.actualCompletionDate,
-        progress: taskForm.value.progress
-      })
+      // 更新任务
+      await tasksStore.updateTask(editingTaskId.value, taskForm.value)
     } else {
-      // 创建新任务
-      await tasksStore.createTask({
-        name: taskForm.value.name,
-        type: taskForm.value.type,
-        projectId: taskForm.value.projectId,
-        description: taskForm.value.description,
-        status: taskForm.value.status,
-        createdAt: taskForm.value.createdAt,
-        dueDate: taskForm.value.dueDate,
-        plannedCompletionDate: taskForm.value.plannedCompletionDate,
-        actualCompletionDate: taskForm.value.actualCompletionDate,
-        progress: taskForm.value.progress
-      })
+      // 创建任务
+      await tasksStore.createTask(taskForm.value)
     }
-
-    // 重置表单
+    
+    // 重置表单并隐藏
     isFormVisible.value = false
+    editingTaskId.value = null
   } catch (error) {
-    console.error('保存任务时出错:', error)
+    console.error('保存任务失败:', error)
   }
 }
 
 // 删除任务
 const deleteTask = async (id: number) => {
-  if (!confirm('确定要删除这个任务吗？')) return
-
-  try {
-    await tasksStore.deleteTask(id)
-  } catch (error) {
-    console.error('删除任务时出错:', error)
+  if (confirm('确定要删除这个任务吗？')) {
+    try {
+      await tasksStore.deleteTask(id)
+    } catch (error) {
+      console.error('删除任务失败:', error)
+    }
   }
-}
-
-// 根据ID获取项目名称
-const getProjectName = (projectId: number | null) => {
-  if (!projectId) return '无项目'
-  const project = projectsStore.projectById(projectId)
-  return project ? project.name : '未知项目'
 }
 
 // 格式化日期显示
 const formatDate = (dateString: string | null) => {
   if (!dateString) return '无'
   return new Date(dateString).toLocaleDateString()
+}
+
+// 获取项目名称
+const getProjectName = (projectId: number | null) => {
+  if (!projectId) return '无项目'
+  const project = projectsStore.projectById(projectId)
+  return project ? project.name : '未知项目'
 }
 
 onMounted(async () => {
@@ -134,13 +117,15 @@ onMounted(async () => {
   <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold text-primary-800">任务管理</h1>
-      <button 
+      <!-- 使用OpenTiny Vue按钮组件 -->
+      <tiny-button 
         @click="showCreateForm"
+        type="primary"
         class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-4 rounded-lg flex items-center"
       >
         <i class="i-mdi-plus mr-1"></i>
         新建任务
-      </button>
+      </tiny-button>
     </div>
 
     <!-- 加载指示器 -->
@@ -152,12 +137,14 @@ onMounted(async () => {
     <!-- 错误信息 -->
     <div v-else-if="tasksStore.error" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
       <p class="text-red-700">{{ tasksStore.error }}</p>
-      <button 
+      <!-- 使用OpenTiny Vue按钮组件 -->
+      <tiny-button 
         @click="tasksStore.fetchTasks"
+        type="danger"
         class="mt-2 bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded"
       >
         重试
-      </button>
+      </tiny-button>
     </div>
 
     <!-- 任务列表 -->
@@ -209,18 +196,22 @@ onMounted(async () => {
               {{ formatDate(task.dueDate || task.due_date) }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button 
+              <!-- 使用OpenTiny Vue按钮组件 -->
+              <tiny-button 
                 @click="showEditForm(task)"
+                type="text"
                 class="text-primary-600 hover:text-primary-900 mr-3"
               >
                 编辑
-              </button>
-              <button 
+              </tiny-button>
+              <!-- 使用OpenTiny Vue按钮组件 -->
+              <tiny-button 
                 @click="deleteTask(task.id)"
+                type="text"
                 class="text-red-600 hover:text-red-900"
               >
                 删除
-              </button>
+              </tiny-button>
             </td>
           </tr>
         </tbody>
@@ -229,12 +220,14 @@ onMounted(async () => {
       <div v-if="tasksStore.tasks.length === 0" class="text-center py-12">
         <i class="i-mdi-clipboard-text text-4xl text-gray-300 mb-4 block"></i>
         <p class="text-gray-500">暂无任务</p>
-        <button 
+        <!-- 使用OpenTiny Vue按钮组件 -->
+        <tiny-button 
           @click="showCreateForm"
+          type="primary"
           class="mt-4 bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg"
         >
           创建第一个任务
-        </button>
+        </tiny-button>
       </div>
     </div>
 
@@ -249,11 +242,11 @@ onMounted(async () => {
           <label class="block text-gray-700 font-medium mb-2" for="task-name">
             任务名称
           </label>
-          <input
+          <!-- 使用OpenTiny Vue输入框组件 -->
+          <tiny-input
             id="task-name"
             v-model="taskForm.name"
-            type="text"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="请输入任务名称"
             required
           />
         </div>
@@ -263,36 +256,35 @@ onMounted(async () => {
             <label class="block text-gray-700 font-medium mb-2" for="task-type">
               任务类型
             </label>
-            <select
+            <!-- 使用OpenTiny Vue选择器组件 -->
+            <tiny-select
               id="task-type"
               v-model="taskForm.type"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="task">任务</option>
-              <option value="bug">Bug</option>
-              <option value="feature">功能</option>
-              <option value="improvement">改进</option>
-            </select>
+              :options="[
+                { label: '任务', value: 'task' },
+                { label: 'Bug', value: 'bug' },
+                { label: '功能', value: 'feature' },
+                { label: '改进', value: 'improvement' }
+              ]"
+            />
           </div>
 
           <div>
             <label class="block text-gray-700 font-medium mb-2" for="task-project">
               所属项目
             </label>
-            <select
+            <!-- 使用OpenTiny Vue选择器组件 -->
+            <tiny-select
               id="task-project"
               v-model="taskForm.projectId"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              <option :value="null">无项目</option>
-              <option 
-                v-for="project in projectsStore.projects" 
-                :key="project.id" 
-                :value="project.id"
-              >
-                {{ project.name }}
-              </option>
-            </select>
+              :options="[
+                { label: '无项目', value: null },
+                ...projectsStore.projects.map(project => ({
+                  label: project.name,
+                  value: project.id
+                }))
+              ]"
+            />
           </div>
         </div>
 
@@ -300,11 +292,13 @@ onMounted(async () => {
           <label class="block text-gray-700 font-medium mb-2" for="task-description">
             任务描述
           </label>
+          <!-- 使用原生textarea元素替代OpenTiny Vue文本域组件 -->
           <textarea
             id="task-description"
             v-model="taskForm.description"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             rows="4"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="请输入任务描述"
           ></textarea>
         </div>
 
@@ -313,28 +307,28 @@ onMounted(async () => {
             <label class="block text-gray-700 font-medium mb-2" for="task-status">
               状态
             </label>
-            <select
+            <!-- 使用OpenTiny Vue选择器组件 -->
+            <tiny-select
               id="task-status"
               v-model="taskForm.status"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="todo">待办</option>
-              <option value="in-progress">进行中</option>
-              <option value="done">已完成</option>
-            </select>
+              :options="[
+                { label: '待办', value: 'todo' },
+                { label: '进行中', value: 'in-progress' },
+                { label: '已完成', value: 'done' }
+              ]"
+            />
           </div>
 
           <div>
             <label class="block text-gray-700 font-medium mb-2" for="task-progress">
               进度 ({{ taskForm.progress }}%)
             </label>
-            <input
+            <!-- 使用OpenTiny Vue滑块组件 -->
+            <tiny-slider
               id="task-progress"
-              v-model.number="taskForm.progress"
-              type="range"
-              min="0"
-              max="100"
-              class="w-full"
+              v-model="taskForm.progress"
+              :min="0"
+              :max="100"
             />
           </div>
         </div>
@@ -345,11 +339,12 @@ onMounted(async () => {
             <label class="block text-gray-700 font-medium mb-2" for="created-at">
               创建时间
             </label>
-            <input
+            <!-- 使用OpenTiny Vue日期选择器组件 -->
+            <tiny-date-picker
               id="created-at"
               v-model="taskForm.createdAt"
-              type="datetime-local"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              type="datetime"
+              placeholder="请选择创建时间"
             />
           </div>
 
@@ -357,11 +352,12 @@ onMounted(async () => {
             <label class="block text-gray-700 font-medium mb-2" for="due-date">
               截止日期
             </label>
-            <input
+            <!-- 使用OpenTiny Vue日期选择器组件 -->
+            <tiny-date-picker
               id="due-date"
               v-model="taskForm.dueDate"
-              type="datetime-local"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              type="datetime"
+              placeholder="请选择截止日期"
             />
           </div>
         </div>
@@ -371,11 +367,12 @@ onMounted(async () => {
             <label class="block text-gray-700 font-medium mb-2" for="planned-completion">
               计划完成时间
             </label>
-            <input
+            <!-- 使用OpenTiny Vue日期选择器组件 -->
+            <tiny-date-picker
               id="planned-completion"
               v-model="taskForm.plannedCompletionDate"
-              type="datetime-local"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              type="datetime"
+              placeholder="请选择计划完成时间"
             />
           </div>
 
@@ -383,31 +380,35 @@ onMounted(async () => {
             <label class="block text-gray-700 font-medium mb-2" for="actual-completion">
               实际完成时间
             </label>
-            <input
+            <!-- 使用OpenTiny Vue日期选择器组件 -->
+            <tiny-date-picker
               id="actual-completion"
               v-model="taskForm.actualCompletionDate"
-              type="datetime-local"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              type="datetime"
+              placeholder="请选择实际完成时间"
             />
           </div>
         </div>
 
         <div class="flex justify-end space-x-3">
-          <button
+          <!-- 使用OpenTiny Vue按钮组件 -->
+          <tiny-button
             @click="isFormVisible = false"
-            type="button"
+            type="default"
             class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg"
           >
             取消
-          </button>
-          <button
-            type="submit"
+          </tiny-button>
+          <!-- 使用OpenTiny Vue按钮组件 -->
+          <tiny-button
+            native-type="submit"
+            type="primary"
             class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg"
             :disabled="tasksStore.loading"
           >
             <span v-if="tasksStore.loading">保存中...</span>
             <span v-else>{{ editingTaskId ? '更新任务' : '创建任务' }}</span>
-          </button>
+          </tiny-button>
         </div>
       </form>
     </div>

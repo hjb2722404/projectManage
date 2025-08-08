@@ -2,13 +2,15 @@
   <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold text-gray-800">项目管理</h1>
-      <button
+      <!-- 使用OpenTiny Vue按钮组件 -->
+      <tiny-button
         @click="showCreateForm"
+        type="primary"
         class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md flex items-center"
       >
         <i class="i-mdi-plus mr-1"></i>
         新建项目
-      </button>
+      </tiny-button>
     </div>
 
     <!-- 项目列表 -->
@@ -33,20 +35,24 @@
             <div class="flex justify-between items-start">
               <h3 class="text-lg font-semibold text-gray-800">{{ project.name }}</h3>
               <div class="flex space-x-2">
-                <button
+                <!-- 使用OpenTiny Vue按钮组件 -->
+                <tiny-button
                   @click="showEditForm(project)"
+                  type="text"
                   class="text-blue-600 hover:text-blue-800"
                   title="编辑项目"
                 >
                   <i class="i-mdi-pencil"></i>
-                </button>
-                <button
+                </tiny-button>
+                <!-- 使用OpenTiny Vue按钮组件 -->
+                <tiny-button
                   @click="deleteProject(project.id)"
+                  type="text"
                   class="text-red-600 hover:text-red-800"
                   title="删除项目"
                 >
                   <i class="i-mdi-delete"></i>
-                </button>
+                </tiny-button>
               </div>
             </div>
 
@@ -81,13 +87,15 @@
               <div class="text-sm text-gray-500">
                 {{ getTaskStats(project.id).completed }}/{{ getTaskStats(project.id).total }} 任务完成
               </div>
-              <button
+              <!-- 使用OpenTiny Vue按钮组件 -->
+              <tiny-button
                 @click="viewProjectTasks(project.id)"
+                type="text"
                 class="text-primary-600 hover:text-primary-800 text-sm font-medium flex items-center"
               >
                 查看任务
                 <i class="i-mdi-arrow-right ml-1"></i>
-              </button>
+              </tiny-button>
             </div>
           </div>
         </div>
@@ -99,12 +107,14 @@
         <h3 class="mt-4 text-lg font-medium text-gray-900">暂无项目</h3>
         <p class="mt-1 text-gray-500">开始创建你的第一个项目</p>
         <div class="mt-6">
-          <button
+          <!-- 使用OpenTiny Vue按钮组件 -->
+          <tiny-button
             @click="showCreateForm"
+            type="primary"
             class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md"
           >
             创建项目
-          </button>
+          </tiny-button>
         </div>
       </div>
     </div>
@@ -117,39 +127,41 @@
             <h2 class="text-xl font-bold text-gray-800">
               {{ editingProjectId ? '编辑项目' : '新建项目' }}
             </h2>
-            <button @click="isFormVisible = false" class="text-gray-500 hover:text-gray-700">
+            <!-- 使用OpenTiny Vue按钮组件 -->
+            <tiny-button @click="isFormVisible = false" type="text" class="text-gray-500 hover:text-gray-700">
               <i class="i-mdi-close"></i>
-            </button>
+            </tiny-button>
           </div>
 
           <form @submit.prevent="saveProject">
             <div class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">项目名称 *</label>
-                <input
+                <!-- 使用OpenTiny Vue输入框组件 -->
+                <tiny-input
                   v-model="projectForm.name"
-                  type="text"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  required
-                />
+                  placeholder="请输入项目名称"
+                ></tiny-input>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">开始日期</label>
-                  <input
+                  <!-- 使用OpenTiny Vue日期选择器组件 -->
+                  <tiny-date-picker
                     v-model="projectForm.startDate"
                     type="date"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
+                    placeholder="请选择开始日期"
+                  ></tiny-date-picker>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">结束日期</label>
-                  <input
+                  <!-- 使用OpenTiny Vue日期选择器组件 -->
+                  <tiny-date-picker
                     v-model="projectForm.endDate"
                     type="date"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
+                    placeholder="请选择结束日期"
+                  ></tiny-date-picker>
                 </div>
               </div>
 
@@ -159,64 +171,52 @@
                 
                 <div class="mb-4">
                   <div class="flex space-x-2 mb-2">
-                    <button
-                      type="button"
+                    <!-- 使用OpenTiny Vue按钮组件 -->
+                    <tiny-button
                       @click="currentContactType = 'manager'"
-                      :class="[
-                        'px-3 py-1 text-sm rounded-md',
-                        currentContactType === 'manager' 
-                          ? 'bg-primary-600 text-white' 
-                          : 'bg-gray-200 text-gray-700'
-                      ]"
+                      :type="currentContactType === 'manager' ? 'primary' : 'default'"
+                      size="mini"
                     >
                       项目负责人
-                    </button>
-                    <button
-                      type="button"
+                    </tiny-button>
+                    <!-- 使用OpenTiny Vue按钮组件 -->
+                    <tiny-button
                       @click="currentContactType = 'upstream'"
-                      :class="[
-                        'px-3 py-1 text-sm rounded-md',
-                        currentContactType === 'upstream' 
-                          ? 'bg-primary-600 text-white' 
-                          : 'bg-gray-200 text-gray-700'
-                      ]"
+                      :type="currentContactType === 'upstream' ? 'primary' : 'default'"
+                      size="mini"
                     >
                       上游对接人
-                    </button>
-                    <button
-                      type="button"
+                    </tiny-button>
+                    <!-- 使用OpenTiny Vue按钮组件 -->
+                    <tiny-button
                       @click="currentContactType = 'downstream'"
-                      :class="[
-                        'px-3 py-1 text-sm rounded-md',
-                        currentContactType === 'downstream' 
-                          ? 'bg-primary-600 text-white' 
-                          : 'bg-gray-200 text-gray-700'
-                      ]"
+                      :type="currentContactType === 'downstream' ? 'primary' : 'default'"
+                      size="mini"
                     >
                       下游对接人
-                    </button>
+                    </tiny-button>
                   </div>
 
                   <div class="flex space-x-2">
-                    <input
+                    <!-- 使用OpenTiny Vue输入框组件 -->
+                    <tiny-input
                       v-model="contactForm.name"
-                      type="text"
                       placeholder="姓名"
-                      class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      class="flex-1"
                     />
-                    <input
+                    <!-- 使用OpenTiny Vue输入框组件 -->
+                    <tiny-input
                       v-model="contactForm.phone"
-                      type="text"
                       placeholder="电话"
-                      class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      class="flex-1"
                     />
-                    <button
-                      type="button"
+                    <!-- 使用OpenTiny Vue按钮组件 -->
+                    <tiny-button
                       @click="addContact"
-                      class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md"
+                      type="primary"
                     >
                       添加
-                    </button>
+                    </tiny-button>
                   </div>
                 </div>
 
@@ -226,32 +226,34 @@
                     <span class="font-medium">{{ contact.name }}</span>
                     <span class="text-gray-600 ml-2">{{ contact.phone }}</span>
                   </div>
-                  <button
-                    type="button"
+                  <!-- 使用OpenTiny Vue按钮组件 -->
+                  <tiny-button
                     @click="removeContact(currentContactType, index)"
+                    type="text"
                     class="text-red-600 hover:text-red-800"
                   >
                     <i class="i-mdi-delete"></i>
-                  </button>
+                  </tiny-button>
                 </div>
               </div>
             </div>
 
             <div class="mt-6 flex justify-end space-x-3">
-              <button
-                type="button"
+              <!-- 使用OpenTiny Vue按钮组件 -->
+              <tiny-button
                 @click="isFormVisible = false"
-                class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                type="default"
               >
                 取消
-              </button>
-              <button
-                type="submit"
+              </tiny-button>
+              <!-- 使用OpenTiny Vue按钮组件 -->
+              <tiny-button
+                native-type="submit"
                 :disabled="!projectForm.name"
-                class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50"
+                type="primary"
               >
                 保存
-              </button>
+              </tiny-button>
             </div>
           </form>
         </div>
@@ -266,6 +268,13 @@ import { useProjectsStore } from '../stores/projects'
 import { useTasksStore } from '../stores/tasks'
 import { useRouter } from 'vue-router'
 import type { Contact } from '../types/project'
+
+// 引入OpenTiny Vue组件
+import { 
+  Button as TinyButton, 
+  Input as TinyInput, 
+  DatePicker as TinyDatePicker 
+} from '@opentiny/vue';
 
 const projectsStore = useProjectsStore()
 const tasksStore = useTasksStore()

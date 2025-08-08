@@ -20,8 +20,13 @@ export const login = async (email: string, password: string) => {
     }
 
     return { user: data.user, session: data.session };
-  } catch (error) {
+  } catch (error: any) {
     console.error('登录错误:', error);
+    // 处理特定的认证错误
+    if (error.message === 'Invalid Refresh Token: Already Used') {
+      // 如果是刷新令牌错误，清除本地认证数据并重新登录
+      clearAuthData();
+    }
     throw error;
   }
 };
@@ -51,7 +56,8 @@ export const logout = async () => {
     const { error } = await supabase.auth.signOut();
     
     if (error) {
-      throw error;
+      console.error('登出错误:', error);
+      // 即使有错误也继续清除本地数据
     }
     
     // 清除认证数据
@@ -60,37 +66,63 @@ export const logout = async () => {
     return { success: true };
   } catch (error) {
     console.error('登出错误:', error);
+    // 即使有异常也继续清除本地数据
+    clearAuthData();
     throw error;
   }
 };
 
 // 清除认证数据
 export const clearAuthData = () => {
-  // 清除 localStorage
-  Object.keys(localStorage).forEach(key => {
-    if (key.includes('supabase') || key.includes('auth')) {
-      localStorage.removeItem(key);
-    }
-  });
-  
-  // 清除 sessionStorage
-  Object.keys(sessionStorage).forEach(key => {
-    if (key.includes('supabase') || key.includes('auth')) {
-      sessionStorage.removeItem(key);
-    }
-  });
-  
-  console.log('已清除所有认证数据');
+  try {
+    // 清除 localStorage
+    Object.keys(localStorage).forEach(key => {
+      if (key.includes('supabase') || key.includes('auth')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    // 清除 sessionStorage
+    Object.keys(sessionStorage).forEach(key => {
+      if (key.includes('supabase') || key.includes('auth')) {
+        sessionStorage.removeItem(key);
+      }
+    });
+    
+    console.log('已清除所有认证数据');
+  } catch (error) {
+    console.error('清除认证数据时出错:', error);
+  }
 };
 
 // 获取当前用户
 export const getCurrentUser = async () => {
-  const { data: { user } } = await supabase.auth.getUser();
-  return user;
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    
+    if (error) {
+      // 如果有认证错误，清除本地数据
+      if (error.message === 'Invalid Refresh Token: Already Used') {
+        clearAuthData();
+      }
+      throw error;
+    }
+    
+    return user;
+  } catch (error) {
+    console.error('获取当前用户错误:', error);
+    return null;
+  }
 };
 
 // 监听认证状态变化
 export const onAuthStateChange = (callback: (event: string, session: any) => void) => {
-  const { data: { subscription } } = supabase.auth.onAuthStateChange(callback);
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // 处理认证状态变化
+    if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+      clearAuthData();
+    }
+    callback(event, session);
+  });
   return subscription;
 };

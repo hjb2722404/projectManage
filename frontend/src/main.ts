@@ -6,6 +6,9 @@ import { onAuthStateChange } from './services/authService';
 // @ts-ignore
 import 'uno.css';
 
+// 引入OpenTiny Vue组件库
+import TinyVue from '@opentiny/vue';
+
 // 创建应用实例
 const app = createApp(App);
 
@@ -15,6 +18,9 @@ app.use(pinia);
 
 // 使用路由
 app.use(router);
+
+// 使用OpenTiny Vue组件库
+app.use(TinyVue);
 
 // 监听认证状态变化
 onAuthStateChange((event, _session) => {
